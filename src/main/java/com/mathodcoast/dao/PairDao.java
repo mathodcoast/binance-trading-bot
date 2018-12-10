@@ -6,7 +6,6 @@ import java.util.Map;
 
 public interface PairDao {
 
-
     Long buyLimitOrder(Pair pair,double price,double quantity);
 
     Long sellLimitOrder(Pair pair,double price, double quantity);
