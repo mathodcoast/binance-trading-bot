@@ -19,6 +19,7 @@ public class App {
     }
 
     public static void main(String[] args) {
+        BinanceBotUtill.getApiFromFile();
 
         System.out.println(BinanceBotUtill.client.getServerTime());
         System.out.println(System.currentTimeMillis());
