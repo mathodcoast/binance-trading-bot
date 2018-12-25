@@ -12,7 +12,7 @@ public class PairExchangeWebSocketImpl implements WebSocketDao {
     private Pair pair;
 
     public PairExchangeWebSocketImpl(Pair pair) {
-        this.webSocketClient = BinanceBotUtill.webSocketClient;
+        this.webSocketClient = BinanceBotUtill.getInstance().webSocketClient;
         this.pair = pair;
     }
 

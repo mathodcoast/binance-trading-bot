@@ -7,15 +7,16 @@ import com.mathodcoast.exchange.PairDao;
 import com.mathodcoast.exchange.WebSocketDao;
 import com.mathodcoast.model.Pair;
 import com.mathodcoast.model.TradingConfig;
+import com.mathodcoast.utillities.BinanceBotUtill;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import static com.mathodcoast.utillities.BinanceBotUtill.increaseValueOnCoefficient;
 
 public class TradingOperationWS implements Runnable{
+    private BinanceBotUtill botUtill;
     private PairDao pairDao;
     private WebSocketDao webSocketDao;
     private Pair pair;
@@ -36,6 +37,7 @@ public class TradingOperationWS implements Runnable{
     private int webSocketTestCounter = 0;
 
     public TradingOperationWS(Pair pair,TradingConfig tradingConfig,double buyPrice,double marketCoinQuantity) {
+        botUtill = BinanceBotUtill.getInstance();
         this.pair = pair;
         this.buyPrice = buyPrice;
         this.marketCoinQuantity = marketCoinQuantity;
@@ -55,7 +57,7 @@ public class TradingOperationWS implements Runnable{
         if (orderStatus.equals("FILLED")){
             webSocket = webSocketDao.listeningAndCashingOfPairPrice();
 
-            takeProfitPrice = increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitForStartCoefficient());
+            takeProfitPrice = botUtill.increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitForStartCoefficient());
             calculateStopLossPrice();
 
             createStopLimitOrder(stopLossPrice);
@@ -66,7 +68,7 @@ public class TradingOperationWS implements Runnable{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                newTakeProfitPrice = increaseValueOnCoefficient(takeProfitPrice, tradingConfig.getNewTakeProfitCoefficient());
+                newTakeProfitPrice = botUtill.increaseValueOnCoefficient(takeProfitPrice, tradingConfig.getNewTakeProfitCoefficient());
                 if(pair.getPrice() > newTakeProfitPrice){
                     pairDao.cancelOrder(orderId);
 

@@ -19,9 +19,9 @@ public class App {
     }
 
     public static void main(String[] args) {
-        BinanceBotUtill.getApiFromFile();
+        BinanceBotUtill botUtil = BinanceBotUtill.getInstance();
 
-        System.out.println(BinanceBotUtill.client.getServerTime());
+        System.out.println(botUtil.client.getServerTime());
         System.out.println(System.currentTimeMillis());
 
         Coin tradingCoin = new Coin();
@@ -49,7 +49,7 @@ public class App {
 //        String result = BinanceBotUtill.client.getExchangeInfo().getSymbolInfo("ETHBTC").getSymbolFilter(FilterType.LOT_SIZE).getStepSize();
 //        System.out.println(result);
 
-        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.000929,0.0012);
+        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.00054,0.0012);
         Thread websocketTestThread = new Thread(tradingOperationWS);
         websocketTestThread.start();
 

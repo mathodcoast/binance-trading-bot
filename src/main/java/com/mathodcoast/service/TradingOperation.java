@@ -55,7 +55,7 @@ public class TradingOperation implements Runnable{
         Long buyOrderId = pairDao.buyLimitOrder(buyPrice, coinBuyQuantity);
         String buyOrderStatus = pairDao.getOrderStatus(buyOrderId);
         stopLossPrice = calculateStopLossPrice();
-        takeProfitPrice = increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitCoefficient());
+        //takeProfitPrice = increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitCoefficient());
         maxTradePrice = buyPrice;
 
         System.out.println(String
