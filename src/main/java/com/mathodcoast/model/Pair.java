@@ -13,6 +13,7 @@ public class Pair {
     private Market market;
     private double bid;
     private double ask;
+    private double price;
 
     public String getStringPairName(){
         return coin.getName() + market.getName();

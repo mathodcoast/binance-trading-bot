@@ -1,12 +1,14 @@
 package com.mathodcoast.service;
 
-
-import com.mathodcoast.dao.PairDao;
-import com.mathodcoast.dao.PairDaoImpl;
+import com.mathodcoast.exchange.Implementation.PairExchangeRepositoryImpl;
+import com.mathodcoast.exchange.PairDao;
 import com.mathodcoast.model.Pair;
+import com.mathodcoast.model.TradingConfig;
 import lombok.*;
 
 import java.util.Locale;
+
+import static com.mathodcoast.utillities.BinanceBotUtill.*;
 
 @Getter
 @Setter
@@ -33,7 +35,7 @@ public class TradingOperation implements Runnable{
         this.pair = pair;
         this.buyPrice = buyPrice;
         this.marketCoinQuantity = marketCoinQuantity;
-        this.pairDao = new PairDaoImpl(pair);
+        this.pairDao = new PairExchangeRepositoryImpl(pair);
         this.tradingConfig = tradingConfig;
     }
 
@@ -48,19 +50,19 @@ public class TradingOperation implements Runnable{
     }
 
     public void run() {
-        coinBuyQuantity = Math.round(marketCoinQuantity / buyPrice);
+        coinBuyQuantity = marketCoinQuantity / buyPrice;
 
-        Long buyOrderId = pairDao.buyLimitOrder(pair, buyPrice, coinBuyQuantity);
-        String buyOrderStatus = pairDao.getOrderStatus(pair, buyOrderId);
+        Long buyOrderId = pairDao.buyLimitOrder(buyPrice, coinBuyQuantity);
+        String buyOrderStatus = pairDao.getOrderStatus(buyOrderId);
         stopLossPrice = calculateStopLossPrice();
-        takeProfitPrice = buyPrice + buyPrice * tradingConfig.getTakeProfitStartCoefficient();
+        takeProfitPrice = increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitCoefficient());
         maxTradePrice = buyPrice;
 
         System.out.println(String
                 .format(Locale.US,"Buy order status: %s | Stop Loss after Filling: %.8f | Take Profit starts at: %.8f"
                         ,buyOrderStatus , stopLossPrice , takeProfitPrice));
 
-        pairDao.getLatestPrice(pair);
+        pairDao.getLatestPrice();
         //webSocketDao.performStopLossAndTakeProfitStrategy(this); // Test
 
         boolean isBuyOrderFilled = false;
@@ -72,14 +74,14 @@ public class TradingOperation implements Runnable{
                 e.printStackTrace();
             }
 
-             buyOrderStatus = pairDao.getOrderStatus(pair,buyOrderId);
+             buyOrderStatus = pairDao.getOrderStatus(buyOrderId);
 
             if(buyOrderStatus.equals("FILLED")){
                 isBuyOrderFilled = true;
                 System.out.println( "Buy order status: " + buyOrderStatus);
 
                 sellPrice = stopLossPrice - stopLossPrice * tradingConfig.getSellToStopCoefficient();
-                Long sellStopLimitOrder = pairDao.sellStopLimitOrder(pair,stopLossPrice,sellPrice,coinBuyQuantity);
+                Long sellStopLimitOrder = pairDao.sellStopLimitOrder(stopLossPrice,sellPrice,coinBuyQuantity);
 
                 String stopOrderStatus = "";
                 while(!stopOrderStatus.equals("FILLED")) {
@@ -90,26 +92,26 @@ public class TradingOperation implements Runnable{
                     }
 
                     // Increase Take Profit
-                    latestPrice = pairDao.getLatestPrice(pair);
-                    newTakeProfitPrice = maxTradePrice + maxTradePrice * tradingConfig.getNewTakeProfitCoefficient();
+                    newTakeProfitPrice = takeProfitPrice + takeProfitPrice * tradingConfig.getNewTakeProfitCoefficient();
+                    latestPrice = pairDao.getLatestPrice();
                     if (newTakeProfitPrice < latestPrice) {
                         maxTradePrice = latestPrice;
 
                         priceDifference = maxTradePrice - buyPrice;
-                        takeProfitPrice = maxTradePrice - priceDifference * tradingConfig.getTakeProfitCoefficient();
+
+                        takeProfitPrice = newTakeProfitPrice;
                         sellPrice = takeProfitPrice - takeProfitPrice * tradingConfig.getSellToStopCoefficient();
-                        System.out.println(String.format("Highest prise: %.8f", maxTradePrice));
+                        System.out.println(String.format("New Take Profit Price: %.8f", takeProfitPrice));
 
-                        pairDao.cancelOrder(pair,sellStopLimitOrder);
-                        sellStopLimitOrder = pairDao.sellStopLimitOrder(pair,takeProfitPrice,sellPrice,coinBuyQuantity);
+                        pairDao.cancelOrder(sellStopLimitOrder);
+                        sellStopLimitOrder = pairDao.sellStopLimitOrder(takeProfitPrice,sellPrice,coinBuyQuantity);
                     }
-                    stopOrderStatus = pairDao.getOrderStatus(pair, sellStopLimitOrder);
+                    stopOrderStatus = pairDao.getOrderStatus(sellStopLimitOrder);
 
-
-                    if((stopOrderStatus.equals("NEW") || stopOrderStatus.equals("PARTIALLY_FILLED")) && latestPrice < takeProfitPrice){
+                    if((stopOrderStatus.equals("NEW") || stopOrderStatus.equals("PARTIALLY_FILLED")) && latestPrice < sellPrice){
                         System.out.println("IMMEDIATE SALE. Order status: " + stopOrderStatus);
-                        pairDao.cancelOrder(pair,sellStopLimitOrder);
-                        sellStopLimitOrder = pairDao.sellLimitOrder(pair, latestPrice, coinBuyQuantity);
+                        pairDao.cancelOrder(sellStopLimitOrder);
+                        sellStopLimitOrder = pairDao.sellLimitOrder(latestPrice, coinBuyQuantity);
                     }
                 }
                 System.out.println("Order status: " + stopOrderStatus);

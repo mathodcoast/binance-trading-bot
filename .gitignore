@@ -1,0 +1,9 @@
+
+.idea/binance-traiding-bot.iml
+.idea/encodings.xml
+.idea/workspace.xml
+
+target/
+
+/src/main/resources/confidential/UserExchangeApi
+/src/main/java/com/mathodcoast/utillities/BinanceBotUtill.java
