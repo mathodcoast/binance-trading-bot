@@ -8,7 +8,7 @@ import com.binance.api.client.domain.general.ExchangeInfo;
 
 public class BinanceBotUtill {
 
-    private static final String API_KEY ="16984564";
+    private static final String API_KEY ="9999999999";
     private static final String SECRET_API_KEY ="";
 
     private static BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance(API_KEY, SECRET_API_KEY);
