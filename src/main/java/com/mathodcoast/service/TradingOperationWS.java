@@ -30,6 +30,9 @@ public class TradingOperationWS implements Runnable{
     private double sellPrice;
     private double takeProfitPrice;
     private double newTakeProfitPrice;
+    private double noLossActivatePrice;
+    private double noLossPrice;
+
 
     private Long orderId;
     private String orderStatus;
@@ -54,11 +57,11 @@ public class TradingOperationWS implements Runnable{
         printOrderStatus();
 
         orderStatusCheckingCycle();
+
         if (orderStatus.equals("FILLED")){
             webSocket = webSocketDao.listeningAndCashingOfPairPrice();
 
-            takeProfitPrice = botUtill.increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitForStartCoefficient());
-            calculateStopLossPrice();
+            calculatingAfterBuy();
 
             createStopLimitOrder(stopLossPrice);
 
@@ -68,7 +71,14 @@ public class TradingOperationWS implements Runnable{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                if (pair.getPrice() < noLossActivatePrice){
+                    takeProfitPrice = noLossPrice;
+                    tradingConfig.setNewTakeProfitCoefficient(0.0001);
+                }
+
                 newTakeProfitPrice = botUtill.increaseValueOnCoefficient(takeProfitPrice, tradingConfig.getNewTakeProfitCoefficient());
+
                 if(pair.getPrice() > newTakeProfitPrice){
                     pairDao.cancelOrder(orderId);
 
@@ -77,8 +87,6 @@ public class TradingOperationWS implements Runnable{
                     takeProfitPrice = newTakeProfitPrice;
                 }
                 orderStatus = pairDao.getOrderStatus(orderId);
-
-
             }
             printOrderStatus();
         }
@@ -121,7 +129,7 @@ public class TradingOperationWS implements Runnable{
             webSocket.close();
             System.out.println("Web Socked closed.");
         } catch (IOException | NullPointerException e) {
-            System.out.println("Web socked closing error");
+            System.out.println("Web socked closing error.");
             e.printStackTrace();
         }
     }
@@ -143,8 +151,11 @@ public class TradingOperationWS implements Runnable{
         }
     }
 
-    private void calculateStopLossPrice() {
-        stopLossPrice = buyPrice - buyPrice * tradingConfig.getStopLossCoefficient();
+    private void calculatingAfterBuy() {
+        stopLossPrice = botUtill.decreaseValueOnCoefficient(buyPrice,tradingConfig.getStopLossCoefficient());
+        takeProfitPrice = botUtill.increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitForStartCoefficient());
+        noLossActivatePrice = botUtill.decreaseValueOnCoefficient(buyPrice, tradingConfig.getNoLossActivateCoefficient());
+        noLossPrice = botUtill.decreaseValueOnCoefficient(buyPrice, tradingConfig.getMARKET_FEE_COEFFICIENT());
         //System.out.println(String.format(Locale.US,"Stop Loss price: %.8f", stopLossPrice));
     }
 

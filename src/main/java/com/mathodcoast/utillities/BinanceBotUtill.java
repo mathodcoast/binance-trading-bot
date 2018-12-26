@@ -43,6 +43,10 @@ public class BinanceBotUtill {
         return value + value * coefficient;
     }
 
+    public double decreaseValueOnCoefficient(double value,double coefficient){
+        return value - value * coefficient;
+    }
+
     private  Path createPathFromFileName(String fileName){
         Objects.requireNonNull(fileName);
         URL fileUrl = BinanceBotUtill.class.getClassLoader().getResource(fileName);

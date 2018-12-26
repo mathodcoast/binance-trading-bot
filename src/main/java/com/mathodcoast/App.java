@@ -35,7 +35,8 @@ public class App {
                 0.2,
                 0.003,
                 0.0001,
-                0.003
+                0.003,
+                0.006
         );
 
         //TradingOperation testBtcTradingOperation = getNewTradingOperation(testPair,tradingConfig,0.02691,0.0012);
