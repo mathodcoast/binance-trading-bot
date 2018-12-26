@@ -1,6 +1,5 @@
 package com.mathodcoast.utillities;
 
-
 import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.BinanceApiWebSocketClient;
@@ -12,29 +11,39 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BinanceBotUtill {
 
-    private static  String apiKey;
-    private static  String secretApiKey;
-    private static final String API_FILE_NAME = "UserExchangeApi.txt";
+    private BinanceBotUtill() {
+    }
 
-    private static BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance(apiKey, secretApiKey);
-    public static BinanceApiRestClient client = factory.newRestClient();
+    public static BinanceBotUtill getInstance(){
+        if(binanceBotUtill == null){
+            binanceBotUtill = new BinanceBotUtill();
+        }
+        return binanceBotUtill;
+    }
 
-   // private static BinanceApiClientFactory noApiFactory = BinanceApiClientFactory.newInstance();
-   // public static BinanceApiRestClient noApiClient = noApiFactory.newRestClient();
-    public static BinanceApiWebSocketClient webSocketClient = factory.newWebSocketClient();
+    private static BinanceBotUtill binanceBotUtill;
+    private  final String API_KEY = setApiFromFileToList().get(0);
+    private  final String SECRET_KEY = setApiFromFileToList().get(1);
+    private static final String API_FILE_NAME = "confidential/UserExchangeApi.txt";
+
+    private  BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance(API_KEY,SECRET_KEY);
+    public  BinanceApiRestClient client = factory.newRestClient();
+    public  BinanceApiWebSocketClient webSocketClient = factory.newWebSocketClient();
 
    // public static ExchangeInfo exchangeInfo = noApiClient.getExchangeInfo();
 
-    public static double increaseValueOnCoefficient(double value,double coefficient){
+    public double increaseValueOnCoefficient(double value,double coefficient){
         return value + value * coefficient;
     }
 
-    private static Path createPathFromFileName(String fileName){
+    private  Path createPathFromFileName(String fileName){
         Objects.requireNonNull(fileName);
         URL fileUrl = BinanceBotUtill.class.getClassLoader().getResource(fileName);
         try {
@@ -44,16 +53,13 @@ public class BinanceBotUtill {
         }
     }
 
-    public static void getApiFromFile(){
+    public  List<String> setApiFromFileToList(){
         Stream<String> lines;
         try {
             lines = Files.lines(createPathFromFileName(API_FILE_NAME));
-            apiKey = String.valueOf(lines.toArray()[0]);
-            secretApiKey = String.valueOf(lines.toArray()[1]);
+           return lines.collect(Collectors.toList());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new FileReaderException("API Stream error",e);
         }
     }
-
-
 }
