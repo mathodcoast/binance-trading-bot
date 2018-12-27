@@ -5,7 +5,7 @@ import com.mathodcoast.model.Pair;
 import com.mathodcoast.model.Pair.Market;
 import com.mathodcoast.model.TradingConfig;
 import com.mathodcoast.service.TradingOperationWS;
-import com.mathodcoast.utillities.BinanceBotUtill;
+import com.mathodcoast.utillities.BinanceBotUtil;
 
 public class App {
     //public static PairDao pairDao = new PairExchangeRepositoryImpl();
@@ -19,7 +19,7 @@ public class App {
     }
 
     public static void main(String[] args) {
-        BinanceBotUtill botUtil = BinanceBotUtill.getInstance();
+        BinanceBotUtil botUtil = BinanceBotUtil.getInstance();
 
         System.out.println(botUtil.client.getServerTime());
         System.out.println(System.currentTimeMillis());
@@ -36,7 +36,7 @@ public class App {
                 0.003,
                 0.0001,
                 0.003,
-                0.006
+                0.003
         );
 
         //TradingOperation testBtcTradingOperation = getNewTradingOperation(testPair,tradingConfig,0.02691,0.0012);
@@ -47,10 +47,10 @@ public class App {
 //        WebSocketDao webSocketDao = new PairExchangeWebSocketImpl(testPair);
 ////        webSocketDao.listenPairPriceAndApply(App::testRunnableMethod);
 
-//        String result = BinanceBotUtill.client.getExchangeInfo().getSymbolInfo("ETHBTC").getSymbolFilter(FilterType.LOT_SIZE).getStepSize();
+//        String result = BinanceBotUtil.client.getExchangeInfo().getSymbolInfo("ETHBTC").getSymbolFilter(FilterType.LOT_SIZE).getStepSize();
 //        System.out.println(result);
 
-        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.00054,0.0012);
+        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.000862,0.0012);
         Thread websocketTestThread = new Thread(tradingOperationWS);
         websocketTestThread.start();
 

@@ -3,7 +3,7 @@ package com.mathodcoast.exchange.Implementation;
 import com.binance.api.client.BinanceApiWebSocketClient;
 import com.mathodcoast.exchange.WebSocketDao;
 import com.mathodcoast.model.Pair;
-import com.mathodcoast.utillities.BinanceBotUtill;
+import com.mathodcoast.utillities.BinanceBotUtil;
 import java.io.Closeable;
 
 
@@ -12,7 +12,7 @@ public class PairExchangeWebSocketImpl implements WebSocketDao {
     private Pair pair;
 
     public PairExchangeWebSocketImpl(Pair pair) {
-        this.webSocketClient = BinanceBotUtill.getInstance().webSocketClient;
+        this.webSocketClient = BinanceBotUtil.getInstance().webSocketClient;
         this.pair = pair;
     }
 

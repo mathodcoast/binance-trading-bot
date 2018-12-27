@@ -16,19 +16,19 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class BinanceBotUtill {
+public class BinanceBotUtil {
 
-    private BinanceBotUtill() {
+    private BinanceBotUtil() {
     }
 
-    public static BinanceBotUtill getInstance(){
-        if(binanceBotUtill == null){
-            binanceBotUtill = new BinanceBotUtill();
+    public static BinanceBotUtil getInstance(){
+        if(binanceBotUtil == null){
+            binanceBotUtil = new BinanceBotUtil();
         }
-        return binanceBotUtill;
+        return binanceBotUtil;
     }
 
-    private static BinanceBotUtill binanceBotUtill;
+    private static BinanceBotUtil binanceBotUtil;
     private  final String API_KEY = setApiFromFileToList().get(0);
     private  final String SECRET_KEY = setApiFromFileToList().get(1);
     private static final String API_FILE_NAME = "confidential/UserExchangeApi.txt";
@@ -49,7 +49,7 @@ public class BinanceBotUtill {
 
     private  Path createPathFromFileName(String fileName){
         Objects.requireNonNull(fileName);
-        URL fileUrl = BinanceBotUtill.class.getClassLoader().getResource(fileName);
+        URL fileUrl = BinanceBotUtil.class.getClassLoader().getResource(fileName);
         try {
             return Paths.get(fileUrl.toURI());
         } catch (URISyntaxException e) {

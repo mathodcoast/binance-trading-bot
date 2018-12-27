@@ -12,7 +12,7 @@ import com.binance.api.client.domain.account.request.OrderStatusRequest;
 import com.binance.api.client.domain.general.FilterType;
 import com.mathodcoast.exchange.PairDao;
 import com.mathodcoast.model.Pair;
-import com.mathodcoast.utillities.BinanceBotUtill;
+import com.mathodcoast.utillities.BinanceBotUtil;
 import lombok.Getter;
 
 
@@ -32,7 +32,7 @@ public class PairExchangeRepositoryImpl implements PairDao {
     private int pairQuantityLotLength;
 
     public PairExchangeRepositoryImpl(Pair pair) {
-        client = BinanceBotUtill.getInstance().client;
+        client = BinanceBotUtil.getInstance().client;
         this.pair = pair;
         this.pairName = pair.getStringPairName();
         pairQuantityLotLength = setupPairQuantityLotLength();
