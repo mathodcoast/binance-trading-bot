@@ -73,6 +73,7 @@ public class TradingOperationWS implements Runnable{
                 }
 
                 printMassageWithValue("Price:",pair.getPrice());
+                System.out.println("Event Type" + pair.getEventType());
 
                 if (pair.getPrice() < noLossActivatePrice & pair.getPrice() != 0 & noLossActivationPossible){
                     System.out.println("No Loss Activation!!!");

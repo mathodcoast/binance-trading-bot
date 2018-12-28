@@ -1,5 +1,7 @@
 package com.mathodcoast;
 
+import com.mathodcoast.exchange.Implementation.PairExchangeWebSocketImpl;
+import com.mathodcoast.exchange.WebSocketDao;
 import com.mathodcoast.model.Coin;
 import com.mathodcoast.model.Pair;
 import com.mathodcoast.model.Pair.Market;
@@ -44,15 +46,15 @@ public class App {
         //Thread thread = new Thread(testBtcTradingOperation);
         //thread.start();
 
-//        WebSocketDao webSocketDao = new PairExchangeWebSocketImpl(testPair);
-////        webSocketDao.listenPairPriceAndApply(App::testRunnableMethod);
+        WebSocketDao webSocketDao = new PairExchangeWebSocketImpl(testPair);
+       webSocketDao.listenPairPriceAndApply(App::testRunnableMethod);
 
 //        String result = BinanceBotUtil.client.getExchangeInfo().getSymbolInfo("ETHBTC").getSymbolFilter(FilterType.LOT_SIZE).getStepSize();
 //        System.out.println(result);
 
-        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.000862,0.0012);
+        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.00086,0.0012);
         Thread websocketTestThread = new Thread(tradingOperationWS);
-        websocketTestThread.start();
+        //websocketTestThread.start();
 
 
 
