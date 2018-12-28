@@ -32,7 +32,7 @@ public class PairExchangeRepositoryImpl implements PairDao {
     private int pairQuantityLotLength;
 
     public PairExchangeRepositoryImpl(Pair pair) {
-        client = BinanceBotUtil.getInstance().client;
+        client = BinanceBotUtil.getInstance().getClient();
         this.pair = pair;
         this.pairName = pair.getStringPairName();
         pairQuantityLotLength = setupPairQuantityLotLength();

@@ -7,20 +7,15 @@ import com.mathodcoast.exchange.WebSocketDao;
 import com.mathodcoast.model.Pair;
 import com.mathodcoast.utillities.BinanceBotUtil;
 import java.io.Closeable;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.TemporalUnit;
-
 
 public class PairExchangeWebSocketImpl implements WebSocketDao {
+    private BinanceBotUtil botUtil;
     private BinanceApiWebSocketClient webSocketClient;
     private Pair pair;
-    public String eventType;
 
     public PairExchangeWebSocketImpl(Pair pair) {
-        this.webSocketClient = BinanceBotUtil.getInstance().webSocketClient;
+        this.botUtil = BinanceBotUtil.getInstance();
+        this.webSocketClient = botUtil.getWebSocketClient();
         this.pair = pair;
     }
 
@@ -30,10 +25,7 @@ public class PairExchangeWebSocketImpl implements WebSocketDao {
             @Override
             public void onResponse(AggTradeEvent aggTradeEvent) {
                 pair.setPrice(Double.valueOf(aggTradeEvent.getPrice()));
-                System.out.println(pair.getPrice());
                 runnable.run();
-                System.err.println("websocket body");
-                System.out.println(aggTradeEvent.getEventType());
             }
 
             @Override
@@ -51,5 +43,12 @@ public class PairExchangeWebSocketImpl implements WebSocketDao {
             pair.setPrice(Double.valueOf(aggTradeEvent.getPrice()));
             pair.setEventType(aggTradeEvent.getEventType());
                 });
+    }
+
+    @Override
+    public Closeable listenUserAccountChanges() {
+        return webSocketClient.onUserDataUpdateEvent(botUtil.getListenKey(), userDataUpdateEvent -> {
+            System.out.println(userDataUpdateEvent.getOrderTradeUpdateEvent());
+        });
     }
 }

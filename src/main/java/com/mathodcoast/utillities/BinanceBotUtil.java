@@ -4,6 +4,7 @@ import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.BinanceApiWebSocketClient;
 import com.mathodcoast.exception.FileReaderException;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -34,8 +35,15 @@ public class BinanceBotUtil {
     private static final String API_FILE_NAME = "confidential/UserExchangeApi.txt";
 
     private  BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance(API_KEY,SECRET_KEY);
-    public  BinanceApiRestClient client = factory.newRestClient();
-    public  BinanceApiWebSocketClient webSocketClient = factory.newWebSocketClient();
+
+    @Getter
+    private BinanceApiRestClient client = factory.newRestClient();
+
+    @Getter
+    private BinanceApiWebSocketClient webSocketClient = factory.newWebSocketClient();
+
+    @Getter
+    private String listenKey = client.startUserDataStream();
 
    // public static ExchangeInfo exchangeInfo = noApiClient.getExchangeInfo();
 

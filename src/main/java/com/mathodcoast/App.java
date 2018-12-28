@@ -23,7 +23,7 @@ public class App {
     public static void main(String[] args) {
         BinanceBotUtil botUtil = BinanceBotUtil.getInstance();
 
-        System.out.println(botUtil.client.getServerTime());
+        System.out.println(botUtil.getClient().getServerTime());
         System.out.println(System.currentTimeMillis());
 
         Coin tradingCoin = new Coin();
