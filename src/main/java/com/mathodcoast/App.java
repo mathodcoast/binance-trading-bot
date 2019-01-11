@@ -27,7 +27,7 @@ public class App {
         System.out.println(System.currentTimeMillis());
 
         Coin tradingCoin = new Coin();
-        tradingCoin.setName("WAVES");
+        tradingCoin.setName("ZEC");
         Pair testPair = new Pair();
         testPair.setMarket(Market.BTC);
         testPair.setCoin(tradingCoin);
@@ -46,15 +46,15 @@ public class App {
         //Thread thread = new Thread(testBtcTradingOperation);
         //thread.start();
 
-        WebSocketDao webSocketDao = new PairExchangeWebSocketImpl(testPair);
-       webSocketDao.listenPairPriceAndApply(App::testRunnableMethod);
+//        WebSocketDao webSocketDao = new PairExchangeWebSocketImpl(testPair);
+//       webSocketDao.listenPairPriceAndApply(App::testRunnableMethod);
 
 //        String result = BinanceBotUtil.client.getExchangeInfo().getSymbolInfo("ETHBTC").getSymbolFilter(FilterType.LOT_SIZE).getStepSize();
 //        System.out.println(result);
 
-        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.00086,0.0012);
+        TradingOperationWS tradingOperationWS = new TradingOperationWS(testPair,tradingConfig,0.01562,0.0012);
         Thread websocketTestThread = new Thread(tradingOperationWS);
-        //websocketTestThread.start();
+        websocketTestThread.start();
 
 
 

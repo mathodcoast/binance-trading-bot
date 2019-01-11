@@ -30,6 +30,7 @@ public class BinanceBotUtil {
     }
 
     private static BinanceBotUtil binanceBotUtil;
+
     private  final String API_KEY = setApiFromFileToList().get(0);
     private  final String SECRET_KEY = setApiFromFileToList().get(1);
     private static final String API_FILE_NAME = "confidential/UserExchangeApi.txt";

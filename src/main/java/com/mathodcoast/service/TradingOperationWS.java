@@ -21,7 +21,8 @@ public class TradingOperationWS implements Runnable{
     private WebSocketDao webSocketDao;
     private Pair pair;
     private TradingConfig tradingConfig;
-    private Closeable webSocket;
+    private Closeable pairWebSocket;
+    private Closeable userWebSocket;
 
     private double buyPrice;
     private double marketCoinQuantity;
@@ -56,10 +57,13 @@ public class TradingOperationWS implements Runnable{
         orderStatus = pairDao.getOrderStatus(orderId);
         printOrderStatus();
 
+        pairWebSocket = webSocketDao.listenPairPriceAndApply(()-> {});
+        userWebSocket = webSocketDao.listenUserAccountChanges();
+
         orderStatusCheckingCycle();
 
         if (orderStatus.equals("FILLED")){
-            webSocket = webSocketDao.listeningAndCashingOfPairPrice();
+
 
             calculatingAfterBuy();
             createStopLimitOrder(stopLossPrice);
@@ -72,8 +76,8 @@ public class TradingOperationWS implements Runnable{
                     e.printStackTrace();
                 }
 
-                printMassageWithValue("Price:",pair.getPrice());
-                System.out.println("Event Type" + pair.getEventType());
+//                printMassageWithValue("Price:",pair.getPrice());
+//                System.out.println("Event Type" + pair.getEventType());
 
                 if (pair.getPrice() < noLossActivatePrice & pair.getPrice() != 0 & noLossActivationPossible){
                     System.out.println("No Loss Activation!!!");
@@ -134,10 +138,10 @@ public class TradingOperationWS implements Runnable{
 
     private void closeWebSocked() {
         try {
-            webSocket.close();
+            pairWebSocket.close();
             System.out.println("Web Socked closed.");
         } catch (IOException | NullPointerException e) {
-            System.out.println("Web socked closing error.");
+            System.err.println("Web socked closing error.");
             e.printStackTrace();
         }
     }
@@ -151,7 +155,7 @@ public class TradingOperationWS implements Runnable{
     private void webSocketClosingCondition(Supplier<Boolean> supplier){
         if (supplier.get()) {
             try {
-                webSocket.close();
+                pairWebSocket.close();
                 System.out.println("Web Socked closed.");
             } catch (IOException e) {
                 e.printStackTrace();
