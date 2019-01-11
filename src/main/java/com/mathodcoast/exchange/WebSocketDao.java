@@ -7,4 +7,6 @@ public interface WebSocketDao {
     Closeable listenPairPriceAndApply(Runnable runnable);
 
     Closeable listeningAndCashingOfPairPrice();
+
+    Closeable listenUserAccountChanges();
 }

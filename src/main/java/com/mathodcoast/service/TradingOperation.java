@@ -8,8 +8,6 @@ import lombok.*;
 
 import java.util.Locale;
 
-import static com.mathodcoast.utillities.BinanceBotUtill.*;
-
 @Getter
 @Setter
 @NoArgsConstructor

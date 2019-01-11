@@ -7,7 +7,7 @@ import com.mathodcoast.exchange.PairDao;
 import com.mathodcoast.exchange.WebSocketDao;
 import com.mathodcoast.model.Pair;
 import com.mathodcoast.model.TradingConfig;
-import com.mathodcoast.utillities.BinanceBotUtill;
+import com.mathodcoast.utillities.BinanceBotUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -16,12 +16,13 @@ import java.util.function.Supplier;
 
 
 public class TradingOperationWS implements Runnable{
-    private BinanceBotUtill botUtill;
+    private BinanceBotUtil botUtil;
     private PairDao pairDao;
     private WebSocketDao webSocketDao;
     private Pair pair;
     private TradingConfig tradingConfig;
-    private Closeable webSocket;
+    private Closeable pairWebSocket;
+    private Closeable userWebSocket;
 
     private double buyPrice;
     private double marketCoinQuantity;
@@ -30,6 +31,9 @@ public class TradingOperationWS implements Runnable{
     private double sellPrice;
     private double takeProfitPrice;
     private double newTakeProfitPrice;
+    private double noLossActivatePrice;
+    private double noLossPrice;
+
 
     private Long orderId;
     private String orderStatus;
@@ -37,7 +41,7 @@ public class TradingOperationWS implements Runnable{
     private int webSocketTestCounter = 0;
 
     public TradingOperationWS(Pair pair,TradingConfig tradingConfig,double buyPrice,double marketCoinQuantity) {
-        botUtill = BinanceBotUtill.getInstance();
+        botUtil = BinanceBotUtil.getInstance();
         this.pair = pair;
         this.buyPrice = buyPrice;
         this.marketCoinQuantity = marketCoinQuantity;
@@ -53,14 +57,17 @@ public class TradingOperationWS implements Runnable{
         orderStatus = pairDao.getOrderStatus(orderId);
         printOrderStatus();
 
+        pairWebSocket = webSocketDao.listenPairPriceAndApply(()-> {});
+        userWebSocket = webSocketDao.listenUserAccountChanges();
+
         orderStatusCheckingCycle();
+
         if (orderStatus.equals("FILLED")){
-            webSocket = webSocketDao.listeningAndCashingOfPairPrice();
 
-            takeProfitPrice = botUtill.increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitForStartCoefficient());
-            calculateStopLossPrice();
 
+            calculatingAfterBuy();
             createStopLimitOrder(stopLossPrice);
+            boolean noLossActivationPossible = true;
 
             while(!orderStatus.equals("FILLED")){
                 try {
@@ -68,8 +75,23 @@ public class TradingOperationWS implements Runnable{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                newTakeProfitPrice = botUtill.increaseValueOnCoefficient(takeProfitPrice, tradingConfig.getNewTakeProfitCoefficient());
+
+//                printMassageWithValue("Price:",pair.getPrice());
+//                System.out.println("Event Type" + pair.getEventType());
+
+                if (pair.getPrice() < noLossActivatePrice & pair.getPrice() != 0 & noLossActivationPossible){
+                    System.out.println("No Loss Activation!!!");
+
+                    takeProfitPrice = noLossPrice;
+                    tradingConfig.setNewTakeProfitCoefficient(0.0001);
+                    noLossActivationPossible = false;
+                }
+
+                newTakeProfitPrice = botUtil.increaseValueOnCoefficient(takeProfitPrice, tradingConfig.getNewTakeProfitCoefficient());
+
                 if(pair.getPrice() > newTakeProfitPrice){
+                    printOrderStatus();
+
                     pairDao.cancelOrder(orderId);
 
                     createStopLimitOrder(takeProfitPrice);
@@ -77,8 +99,6 @@ public class TradingOperationWS implements Runnable{
                     takeProfitPrice = newTakeProfitPrice;
                 }
                 orderStatus = pairDao.getOrderStatus(orderId);
-
-
             }
             printOrderStatus();
         }
@@ -118,10 +138,10 @@ public class TradingOperationWS implements Runnable{
 
     private void closeWebSocked() {
         try {
-            webSocket.close();
+            pairWebSocket.close();
             System.out.println("Web Socked closed.");
         } catch (IOException | NullPointerException e) {
-            System.out.println("Web socked closing error");
+            System.err.println("Web socked closing error.");
             e.printStackTrace();
         }
     }
@@ -135,7 +155,7 @@ public class TradingOperationWS implements Runnable{
     private void webSocketClosingCondition(Supplier<Boolean> supplier){
         if (supplier.get()) {
             try {
-                webSocket.close();
+                pairWebSocket.close();
                 System.out.println("Web Socked closed.");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -143,13 +163,21 @@ public class TradingOperationWS implements Runnable{
         }
     }
 
-    private void calculateStopLossPrice() {
-        stopLossPrice = buyPrice - buyPrice * tradingConfig.getStopLossCoefficient();
-        //System.out.println(String.format(Locale.US,"Stop Loss price: %.8f", stopLossPrice));
-    }
-
     private void calculateCoinTradeQuantity(){
         System.out.println(String.format(Locale.US,"Quantity for buying in BTC: %f", marketCoinQuantity));
         coinTradeQuantity = marketCoinQuantity / buyPrice;
+    }
+
+    private void calculatingAfterBuy() {
+        stopLossPrice = botUtil.decreaseValueOnCoefficient(buyPrice,tradingConfig.getStopLossCoefficient());
+        takeProfitPrice = botUtil.increaseValueOnCoefficient(buyPrice, tradingConfig.getTakeProfitForStartCoefficient());
+        noLossActivatePrice = botUtil.decreaseValueOnCoefficient(buyPrice, tradingConfig.getNoLossActivateCoefficient());
+        noLossPrice = botUtil.increaseValueOnCoefficient(buyPrice, tradingConfig.getMARKET_FEE_COEFFICIENT());
+
+        System.out.println(String.format(Locale.US,"No Loss Activation price: %.8f | No Loss Price %.8f", noLossActivatePrice, noLossPrice));
+    }
+
+    private void printMassageWithValue(String message, double value){
+        System.out.println(String.format(Locale.US,message + " %.8f", value));
     }
 }

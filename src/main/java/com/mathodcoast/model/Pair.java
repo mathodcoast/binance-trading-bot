@@ -15,6 +15,8 @@ public class Pair {
     private double ask;
     private double price;
 
+    public String eventType;
+
     public String getStringPairName(){
         return coin.getName() + market.getName();
     }
